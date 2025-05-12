@@ -1,0 +1,427 @@
+// Set DEBUG to true to enable debug logging
+const DEBUG = true;
+
+function log(...args) {
+  if (DEBUG) {
+    console.log(...args);
+  }
+}
+
+// Define the map and bookmarks components
+const mapElement = document.querySelector("arcgis-map");
+const timeSlider = document.querySelector("arcgis-time-slider");
+const resetButton = document.querySelector("#reset-button");
+
+// Define a the mapping between slides and time ranges
+const choreographyMapping = {
+  "#slide1": {
+    trackLayer: "",
+    trackField: "",
+    trackLabelField: "",
+    trackLabelIds: [],
+    mapBookmark: "1 - Delayed",
+    mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Lines"],
+    mapLayersOff: ["WMATA | All Buses", "OTP | Route 92 20250224 - 20250304"],
+    mapTimeSyncedLayers: [],
+    timeSliderStart: "2025-03-05T00:00:00Z",
+    timeSliderEnd: "2025-03-18T00:00:00Z",
+    timeSliderUnit: "minutes",
+    timeSliderStep: 3
+  },
+  "#slide2": {
+    trackLayer: "",
+    trackField: "",
+    trackLabelField: "",
+    trackLabelIds: [],
+    mapBookmark: "2 - Delay frequency",
+    mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Lines", "OTP | Route 92 20250224 - 20250304"],
+    mapLayersOff: ["WMATA | All Buses"],
+    mapTimeSyncedLayers: [],
+    timeSliderStart: "2025-03-05T00:00:00Z",
+    timeSliderEnd: "2025-03-18T00:00:00Z",
+    timeSliderUnit: "minutes",
+    timeSliderStep: 3
+  },
+  "#slide3": {
+    trackLayer: "WMATA | All Buses",
+    trackField: "TRIP_ID",
+    trackLabelField: "",
+    trackLabelIds: [],
+    mapBookmark: "3 - Washington DC",
+    mapLayersOn: ["WMATA |All Buses"],
+    mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Lines", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
+    mapTimeSyncedLayers: [],
+    timeSliderStart: "2025-03-05T10:00:00Z",
+    timeSliderEnd: "2025-03-05T23:00:00Z",
+    timeSliderUnit: "minutes",
+    timeSliderStep: 1
+  },
+  "#slide4": {
+    trackLayer: "",
+    trackField: "",
+    trackLabelField: "",
+    trackLabelIds: [],
+    mapBookmark: "3 - Washington DC",
+    mapLayersOn: ["OTP | Buses All Routes 20250305"],
+    mapLayersOff: ["WMATA |All Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Lines", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
+    mapTimeSyncedLayers: [],
+    timeSliderStart: "2025-03-05T10:00:00Z",
+    timeSliderEnd: "2025-03-05T23:00:00Z",
+    timeSliderUnit: "minutes",
+    timeSliderStep: 1
+  }
+}
+
+// "#slide3": {
+//     trackLayer: "Whale Points",
+//     trackField: "id",
+//     trackLabelField: "event_id",
+//     trackLabelIds: ["825", "1109"],
+//     mapBookmark: "Whale",
+//     mapLayersOn: ["Global Ship Density", "Whale Lines Feature"],
+//     mapLayersOff: ["Osprey Audubon Island", "Osprey Waccasassa Bay", "Deer Grazing", "Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], 
+//     mapTimeSyncedLayers: [{
+//       layer: "Whale Traffic Corridor",
+//       visibleFrom: "2019-03-16T00:00:00Z"
+//     }],
+//     timeSliderStart: "2019-03-14T00:00:00Z",
+//     timeSliderEnd: "2019-03-28T00:00:00Z",
+//     timeSliderUnit: "hours",
+//     timeSliderStep: 0.5
+//   }
+
+// Wait for a change in readiness from the map element
+mapElement.addEventListener("arcgisViewReadyChange", (event) => {
+  // When the map is ready...
+  if (event.target.ready) {
+    // Assign a previous hash variable to store the last hash
+    let previousHash = null;
+    let hash = window.location.hash || "#slide1"; // if no has is present use #slide1
+
+    // Access the MapView from the arcgis-map component
+    const view = mapElement.view;
+
+    // Disable map navigation
+    // view.on("mouse-wheel", (event) => {
+    //   event.stopPropagation();
+    // });
+    // view.on("drag", (event) => {
+    //   event.stopPropagation();
+    // });
+
+    // Access the WebMap instance from the view
+    const map = view.map;
+
+    // MAIN CHOREOGRAPHY FUNCTION
+    async function updateMapChoreography() {
+      // Get the current hash of the browser window
+      // Use this to pull map choreography info
+      let hash = window.location.hash || "#slide1"; // if no has is present use #slide1
+      log("Current hash:", hash);
+
+      // Access the layers within the map
+      const layers = map.layers;
+
+      // Configure the track layer
+      // Find the name of the desired track layer in the map layers
+      let trackLayer = layers.find((layer) => layer.title === choreographyMapping[hash].trackLayer);
+
+      // If found configure the track renderer
+      async function applyTrackRender(trackLayerName, trackLayerField, trackLabelField, trackLabelIds) {
+        if (trackLayer) {
+          // these are an attempt to do a hard reset on the renderer when we switch hashes
+          map.remove(trackLayer);
+          trackLayer = trackLayer.clone();
+          map.add(trackLayer);
+          //
+          log("Found track layer named:", trackLayer.title);
+          await trackLayer.when(); // Wait for the layer to load
+          const trackStartField = trackLayer.timeInfo.startField;
+
+          const dateDiffExpression = `
+          if(!HasValue($view, [ "timeProperties", "currentEnd" ])) {
+            return null;
+          }
+          var e = $view.timeProperties.currentEnd;
+          var t = $feature.VEHICLE_DATETIME;
+          var d = DateDiff(e, t, 'minutes');
+          return d;
+        `;
+
+
+
+          trackLayer.visible = true; // Make the layer visible
+          trackLayer.timeInfo = {
+            startField: trackStartField,
+            trackIdField: trackLayerField,
+            interval: {
+              unit: choreographyMapping[hash].timeSliderUnit,
+              value: choreographyMapping[hash].timeSliderStep
+            }
+          };
+          // let whereClause = trackLabelField + ` IN (${trackLabelIds.map(id => `'${id}'`).join(",")})`;
+          
+          trackLayer.effect = "bloom(3, 0.5px, 10%)"
+          trackLayer.trackInfo = {
+            enabled: true,
+            timeField: "startTimeField",
+            maxDisplayObservationsPerTrack: 6,
+            latestObservations: {
+              visible: true,
+              renderer: {
+                type: "simple",
+                symbol: {
+                  type: "simple-marker",
+                  style: "circle",
+                  color: "white",
+                  size: 3,
+                  outline: {
+                    color: "black",
+                    width: 0.5
+                  }
+                },
+                visualVariables: [{
+                    type: "opacity",
+                    valueExpression: dateDiffExpression,
+                    legendOptions: {
+                      showLegend: false
+                    },
+                    stops: [
+                      { value: 7, opacity: 1 },
+                      { value: 14, opacity: 0 }
+                    ]
+                  }]
+              }
+            },
+            previousObservations: {
+              enabled: false,
+              visible: false,
+              labelsVisible: false,
+            //   labelingInfo: [
+            //     {
+            //       symbol: {
+            //         type: "text",
+            //         color: "white",
+            //         haloColor: "black",
+            //         haloSize: 1.5,
+            //         font: {
+            //           family: "Noto Sans",
+            //           size: 8,
+            //           weight: "bold"
+            //         }
+            //       },
+            //       labelPlacement: "above-right",
+            //       labelExpressionInfo: {
+            //         expression: "Text($feature." + trackStartField + ", 'MMMM D, Y')"
+            //       },
+            //       where: whereClause
+            //     }
+            //   ],
+              renderer: {
+                type: "simple",
+                symbol: {
+                  type: "simple-marker",
+                  style: "circle",
+                  color: "white",
+                  size: 1.5
+                }
+              }
+            },
+            trackLines: {
+              visible: true,
+              enabled: true,
+              renderer: {
+                type: "simple",
+                symbol: {
+                  type: "simple-line",
+                  color: "#E64C01",
+                  width: 0.5
+                },
+                visualVariables: [{
+                    type: "opacity",
+                    valueExpression: dateDiffExpression,
+                    legendOptions: {
+                      showLegend: false
+                    },
+                    stops: [
+                      { value: 7, opacity: 1 },
+                      { value: 14, opacity: 0 }
+                    ]
+                  }]
+              }
+            }
+          };
+        }
+      }
+
+      // Function to update the map bookmark
+      function updateMapBookmark(bookmarkName) {
+        if (choreographyMapping[hash]) {
+          // Set the initial map extent by the bookmarkStart
+          const bookmarks = view.map.bookmarks; // Get the bookmarks array from the WebMap
+          const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
+          // Find the bookmark by name
+          // If the bookmark exists, navigate to it
+          if (targetBookmark) {
+            const bookmarkTarget = targetBookmark.viewpoint;
+            bookmarkTarget.scale = bookmarkTarget.scale * 1.1; // Adjust the scale to zoom out a bit
+            mapElement.goTo(bookmarkTarget, { duration: 6000 });  // Navigates to the bookmark view
+          } else {
+            console.error(`Bookmark "${bookmarkName}" not found!`);
+          } 
+        }
+      }
+      // Function to toggle the visibility of a list of layer names
+      function setLayerVisibility(layers, layerNames, visibility) {
+        if (layerNames && layerNames.length > 0) {
+          layers.forEach((layer) => {
+            if (layerNames.includes(layer.title)) {
+              layer.visible = visibility; // Set visibility based on the argument
+              log(
+                visibility
+                  ? "(+) " + layer.title + " is now visible."
+                  : "(-) " + layer.title + " is now hidden."
+              );
+            }
+          });
+        }
+      }
+      // This function manages the visibility of time-synced layers
+      // It only turns these layers on in the map if the current time is greater than the visibleFrom date
+      function manageTimeSyncedLayers(currentTimeSynced, previousTimeSynced, currentTime, layers) {
+        // Create a map of layers for efficient lookups
+        let layerMap = new Map(layers.map((layer) => [layer.title, layer]));
+      
+        // Function to set the visibility of layers based on time-synced data
+        function updateLayerVisibility(timeSynced) {
+          if (timeSynced && timeSynced.length > 0) {
+            timeSynced.forEach((sync) => {
+              const layer = layerMap.get(sync.layer);
+              if (layer) {
+                const visibleFrom = new Date(sync.visibleFrom);
+                layer.visible = currentTime >= visibleFrom;
+                log(
+                  layer.visible
+                    ? "(+) " + layer.title + " is now visible (current time-synced layer)."
+                    : "(-) " + layer.title + " remains hidden (current time-synced layer)."
+                );
+              }
+            });
+          }
+        }
+      
+      // Turn off previous layers
+      setLayerVisibility(layerMap, previousTimeSynced.map(sync => sync.layer), false);
+      
+        // Update visibility for current layers
+        updateLayerVisibility(currentTimeSynced);
+      }
+
+      // Function to define and start the timeSlider component of the animation
+      function updateTimeSlider(timeStart, timeEnd, timeUnit, timeStep, timeSynced, layers, previousTimeSynced) {
+        // Configure the time sliders full extent with the start and end time from choreographyMapping
+        const startFrame = new Date(timeStart);
+        const endFrame = new Date(timeEnd);
+        timeSlider.fullTimeExtent = {start: startFrame, end: endFrame};
+        timeSlider.timeExtent = {start: null, end: startFrame}
+        // Set the timeSlider stops
+        timeSlider.stops = {
+          interval: {
+            unit: timeUnit,
+            value: timeStep
+          }
+        };
+        // Listen for time extent changes
+        if (timeSynced && timeSynced.length > 0) {
+          timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
+            let currentTime = timeSlider.timeExtent.end;
+            log("Time slider changed to:", currentTime);
+
+            // Calculate the time range for filtering (current time minus 15 minutes)
+            const filterTime = new Date(currentTime);
+            filterTime.setMinutes(filterTime.getMinutes() - 1); // TODO: Check back on this after adding a timezone to the data
+
+            // Update the definitionExpression on the trackLayer
+            if (trackLayer) {
+                trackLayer.definitionExpression = `VEHICLE_TIME_ZONED >= '${filterTime.toISOString()}' AND VEHICLE_TIME_ZONED <= '${currentTime.toISOString()}'`;
+                log("Updated definitionExpression:", trackLayer.definitionExpression);
+            }
+
+            // Update time-synced layers
+            manageTimeSyncedLayers(timeSynced, previousTimeSynced, currentTime, layers);
+          });
+        }
+        
+        // Start a TimeSlider animation if not already playing
+        if (timeSlider.state === "ready") {
+          timeSlider.play();
+        }
+      }
+      // Call functions
+      try {
+        await applyTrackRender(
+          choreographyMapping[hash].trackLayer,
+          choreographyMapping[hash].trackField,
+          choreographyMapping[hash].trackLabelField,
+          choreographyMapping[hash].trackLabelIds
+        ); // Wait for the track renderer to be applied
+
+        updateMapBookmark(choreographyMapping[hash].mapBookmark);
+
+        updateTimeSlider(
+          choreographyMapping[hash].timeSliderStart,
+          choreographyMapping[hash].timeSliderEnd,
+          choreographyMapping[hash].timeSliderUnit,
+          choreographyMapping[hash].timeSliderStep,
+          choreographyMapping[hash].mapTimeSyncedLayers,
+          layers,
+          choreographyMapping[previousHash]?.mapTimeSyncedLayers || []
+        );
+        // Turn off layer visibility
+        if (choreographyMapping[hash].mapLayersOn.length > 0) {
+          setLayerVisibility(layers, choreographyMapping[hash].mapLayersOn, true);
+        }
+        // Turn on layer visibility
+        if (choreographyMapping[hash].mapLayersOff.length > 0) {
+          setLayerVisibility(layers, choreographyMapping[hash].mapLayersOff, false);
+        }
+
+        // Update the previous hash
+        previousHash = hash;
+
+        log("Map choreography updated successfully.");
+      } catch (error) {
+        console.error("Error updating map choreography:", error);
+      }
+    }
+
+    // Add reset animation button
+    resetButton.addEventListener("click", () => {
+      const config = choreographyMapping[hash];
+      if (config) {
+        // Reset the time slider to its initial state
+        timeSlider.timeExtent = {
+          start: null,
+          end: new Date(config.timeSliderStart)
+        };
+  
+        // Replay the animation
+        if (timeSlider.state === "ready") {
+          timeSlider.play();
+        }
+  
+        log("Animation reset and replayed.");
+      } else {
+        console.error("No configuration found for the current hash.");
+      }
+    });
+
+
+    // Call the updateMapChoreography function to set the initial state
+    updateMapChoreography()
+    // Listen for hash changes and update the choreography
+    window.addEventListener("hashchange", async () => {
+      await updateMapChoreography();
+    });
+  }
+});
