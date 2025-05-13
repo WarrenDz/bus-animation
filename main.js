@@ -76,24 +76,6 @@ const choreographyMapping = {
   }
 }
 
-// "#slide3": {
-//     trackLayer: "Whale Points",
-//     trackField: "id",
-//     trackLabelField: "event_id",
-//     trackLabelIds: ["825", "1109"],
-//     mapBookmark: "Whale",
-//     mapLayersOn: ["Global Ship Density", "Whale Lines Feature"],
-//     mapLayersOff: ["Osprey Audubon Island", "Osprey Waccasassa Bay", "Deer Grazing", "Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], 
-//     mapTimeSyncedLayers: [{
-//       layer: "Whale Traffic Corridor",
-//       visibleFrom: "2019-03-16T00:00:00Z"
-//     }],
-//     timeSliderStart: "2019-03-14T00:00:00Z",
-//     timeSliderEnd: "2019-03-28T00:00:00Z",
-//     timeSliderUnit: "hours",
-//     timeSliderStep: 0.5
-//   }
-
 // Wait for a change in readiness from the map element
 mapElement.addEventListener("arcgisViewReadyChange", (event) => {
   // When the map is ready...
@@ -163,9 +145,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
               value: choreographyMapping[hash].timeSliderStep
             }
           };
-          // let whereClause = trackLabelField + ` IN (${trackLabelIds.map(id => `'${id}'`).join(",")})`;
-          
-          trackLayer.effect = "bloom(3, 0.5px, 10%)"
+          trackLayer.effect = "bloom(3, 0.5px, 10%)" // Apply a bloom effect to the track layer
           trackLayer.trackInfo = {
             enabled: true,
             timeField: "startTimeField",
