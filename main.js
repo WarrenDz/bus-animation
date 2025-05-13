@@ -21,12 +21,13 @@ const choreographyMapping = {
     trackLabelIds: [],
     mapBookmark: "1 - Delayed",
     mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Lines"],
-    mapLayersOff: ["WMATA | All Buses", "OTP | Route 92 20250224 - 20250304"],
+    mapLayersOff: ["WMATA | All Buses", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"],
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T00:00:00Z",
     timeSliderEnd: "2025-03-18T00:00:00Z",
     timeSliderUnit: "minutes",
-    timeSliderStep: 3
+    timeSliderStep: 3,
+    timeSliderAutoplay: false
   },
   "#slide2": {
     trackLayer: "",
@@ -35,12 +36,13 @@ const choreographyMapping = {
     trackLabelIds: [],
     mapBookmark: "2 - Delay frequency",
     mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Lines", "OTP | Route 92 20250224 - 20250304"],
-    mapLayersOff: ["WMATA | All Buses"],
+    mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305"],
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T00:00:00Z",
     timeSliderEnd: "2025-03-18T00:00:00Z",
     timeSliderUnit: "minutes",
-    timeSliderStep: 3
+    timeSliderStep: 3,
+    timeSliderAutoplay: false
   },
   "#slide3": {
     trackLayer: "WMATA | All Buses",
@@ -48,13 +50,14 @@ const choreographyMapping = {
     trackLabelField: "",
     trackLabelIds: [],
     mapBookmark: "3 - Washington DC",
-    mapLayersOn: ["WMATA |All Buses"],
-    mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Lines", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
+    mapLayersOn: ["WMATA | All Buses"],
+    mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Lines", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"], 
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T10:00:00Z",
     timeSliderEnd: "2025-03-05T23:00:00Z",
     timeSliderUnit: "minutes",
-    timeSliderStep: 1
+    timeSliderStep: 1,
+    timeSliderAutoplay: true
   },
   "#slide4": {
     trackLayer: "",
@@ -63,32 +66,15 @@ const choreographyMapping = {
     trackLabelIds: [],
     mapBookmark: "3 - Washington DC",
     mapLayersOn: ["OTP | Buses All Routes 20250305"],
-    mapLayersOff: ["WMATA |All Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Lines", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
+    mapLayersOff: ["WMATA | All Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Lines", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T10:00:00Z",
     timeSliderEnd: "2025-03-05T23:00:00Z",
     timeSliderUnit: "minutes",
-    timeSliderStep: 1
+    timeSliderStep: 1,
+    timeSliderAutoplay: false
   }
 }
-
-// "#slide3": {
-//     trackLayer: "Whale Points",
-//     trackField: "id",
-//     trackLabelField: "event_id",
-//     trackLabelIds: ["825", "1109"],
-//     mapBookmark: "Whale",
-//     mapLayersOn: ["Global Ship Density", "Whale Lines Feature"],
-//     mapLayersOff: ["Osprey Audubon Island", "Osprey Waccasassa Bay", "Deer Grazing", "Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], 
-//     mapTimeSyncedLayers: [{
-//       layer: "Whale Traffic Corridor",
-//       visibleFrom: "2019-03-16T00:00:00Z"
-//     }],
-//     timeSliderStart: "2019-03-14T00:00:00Z",
-//     timeSliderEnd: "2019-03-28T00:00:00Z",
-//     timeSliderUnit: "hours",
-//     timeSliderStep: 0.5
-//   }
 
 // Wait for a change in readiness from the map element
 mapElement.addEventListener("arcgisViewReadyChange", (event) => {
@@ -159,9 +145,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
               value: choreographyMapping[hash].timeSliderStep
             }
           };
-          // let whereClause = trackLabelField + ` IN (${trackLabelIds.map(id => `'${id}'`).join(",")})`;
-          
-          trackLayer.effect = "bloom(3, 0.5px, 10%)"
+          trackLayer.effect = "bloom(3, 0.5px, 10%)" // Apply a bloom effect to the track layer
           trackLayer.trackInfo = {
             enabled: true,
             timeField: "startTimeField",
@@ -318,7 +302,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       }
 
       // Function to define and start the timeSlider component of the animation
-      function updateTimeSlider(timeStart, timeEnd, timeUnit, timeStep, timeSynced, layers, previousTimeSynced) {
+      function updateTimeSlider(timeStart, timeEnd, timeUnit, timeStep, timeSynced, layers, previousTimeSynced, autoplay) {
         // Configure the time sliders full extent with the start and end time from choreographyMapping
         const startFrame = new Date(timeStart);
         const endFrame = new Date(timeEnd);
@@ -353,8 +337,10 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
         }
         
         // Start a TimeSlider animation if not already playing
-        if (timeSlider.state === "ready") {
+        if (autoplay && timeSlider.state === "ready") {
           timeSlider.play();
+        } else {
+          timeSlider.stop();
         }
       }
       // Call functions
@@ -375,7 +361,8 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           choreographyMapping[hash].timeSliderStep,
           choreographyMapping[hash].mapTimeSyncedLayers,
           layers,
-          choreographyMapping[previousHash]?.mapTimeSyncedLayers || []
+          choreographyMapping[previousHash]?.mapTimeSyncedLayers || [],
+          choreographyMapping[hash].timeSliderAutoplay
         );
         // Turn off layer visibility
         if (choreographyMapping[hash].mapLayersOn.length > 0) {
@@ -385,7 +372,6 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
         if (choreographyMapping[hash].mapLayersOff.length > 0) {
           setLayerVisibility(layers, choreographyMapping[hash].mapLayersOff, false);
         }
-
         // Update the previous hash
         previousHash = hash;
 
@@ -415,13 +401,26 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
         console.error("No configuration found for the current hash.");
       }
     });
+    // Enable or disable the reset button based on the autoplay argument
+    function updateResetButtonState() {
+      const config = choreographyMapping[hash];
+      if (config && config.timeSliderAutoplay) {
+        resetButton.disabled = false; // Enable the button
+        timeSlider.stop();
+      } else {
+        resetButton.disabled = true; // Disable the button
+      }
+    }
 
+    // Call the function to set the initial state of the reset button
+    updateResetButtonState();
 
     // Call the updateMapChoreography function to set the initial state
     updateMapChoreography()
     // Listen for hash changes and update the choreography
     window.addEventListener("hashchange", async () => {
       await updateMapChoreography();
+      updateResetButtonState();
     });
   }
 });
