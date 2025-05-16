@@ -24,46 +24,46 @@ const choreographyMapping = {
     mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Route 92"],
     mapLayersOff: ["WMATA | All Buses", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"],
     mapTimeSyncedLayers: [],
-    timeSliderStart: "2025-03-05T00:00:00Z",
-    timeSliderEnd: "2025-03-18T00:00:00Z",
-    timeSliderUnit: "minutes",
+    timeSliderStart: "2025-03-05T09:30:00-05:00",
+    timeSliderEnd: "2025-03-05T11:00:00-05:00",
+    timeSliderUnit: "hours",
     timeSliderStep: 3,
     timeSliderAutoplay: false
   },
   "#slide2": {
-    trackLayer: "",
-    trackField: "",
-    trackLabelField: "",
-    trackLabelIds: [],
-    trackRenderer: "basic",
-    mapBookmark: "2 - Delay frequency",
-    mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Route 92", "OTP | Route 92 20250224 - 20250304"],
-    mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305"],
-    mapTimeSyncedLayers: [],
-    timeSliderStart: "2025-03-05T00:00:00Z",
-    timeSliderEnd: "2025-03-18T00:00:00Z",
-    timeSliderUnit: "minutes",
-    timeSliderStep: 3,
-    timeSliderAutoplay: false
-  },
-  // TO-DO: Add optional renderer to the track layer
-  "#slide2_5": {
     trackLayer: "WMATA | Route 92 Buses",
     trackField: "TRIP_ID",
     trackLabelField: "",
     trackLabelIds: [],
     trackRenderer: "otp",
     mapBookmark: "Route 92",
-    mapLayersOn: ["WMATA | Route 92 Buses", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Route 92"],
-    mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305"],
+    mapLayersOn: ["WMATA | Route 92 Buses", "WMATA | Metro Bus Route 92"],
+    mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"],
     mapTimeSyncedLayers: [],
-    timeSliderStart: "2025-03-04T18:00:00Z",
-    timeSliderEnd: "2025-03-05T23:00:00Z",
+    timeSliderStart: "2025-03-05T07:00:00-05:00",
+    timeSliderEnd: "2025-03-05T17:00:00-05:00",
     timeSliderUnit: "minutes",
     timeSliderStep: 1,
     timeSliderAutoplay: true
   },
   "#slide3": {
+    trackLayer: "",
+    trackField: "",
+    trackLabelField: "",
+    trackLabelIds: [],
+    trackRenderer: "basic",
+    mapBookmark: "Route 92",
+    mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"],
+    mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305", "WMATA | Metro Bus Route 92"],
+    mapTimeSyncedLayers: [],
+    timeSliderStart: "2025-03-05T08:00:00-05:00",
+    timeSliderEnd: "2025-03-05T23:00:00-05:00",
+    timeSliderUnit: "minutes",
+    timeSliderStep: 3,
+    timeSliderAutoplay: false
+  },
+  // TO-DO: Add optional renderer to the track layer
+  "#slide4": {
     trackLayer: "WMATA | All Buses",
     trackField: "TRIP_ID",
     trackLabelField: "",
@@ -73,13 +73,13 @@ const choreographyMapping = {
     mapLayersOn: ["WMATA | All Buses"],
     mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"], 
     mapTimeSyncedLayers: [],
-    timeSliderStart: "2025-03-05T10:00:00Z",
-    timeSliderEnd: "2025-03-05T23:00:00Z",
+    timeSliderStart: "2025-03-05T8:00:00-05:00",
+    timeSliderEnd: "2025-03-05T23:00:00-05:00",
     timeSliderUnit: "minutes",
     timeSliderStep: 1,
     timeSliderAutoplay: true
   },
-  "#slide4": {
+  "#slide5": {
     trackLayer: "",
     trackField: "",
     trackLabelField: "",
@@ -89,8 +89,8 @@ const choreographyMapping = {
     mapLayersOn: ["OTP | Buses All Routes 20250305"],
     mapLayersOff: ["WMATA | All Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
     mapTimeSyncedLayers: [],
-    timeSliderStart: "2025-03-05T10:00:00Z",
-    timeSliderEnd: "2025-03-05T23:00:00Z",
+    timeSliderStart: "2025-03-05T8:00:00-05:00",
+    timeSliderEnd: "2025-03-05T23:00:00-05:00",
     timeSliderUnit: "minutes",
     timeSliderStep: 1,
     timeSliderAutoplay: false
@@ -405,11 +405,11 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
 
             // Calculate the time range for filtering (current time minus 15 minutes)
             const filterTime = new Date(currentTime);
-            filterTime.setMinutes(filterTime.getMinutes() - 1); // TODO: Check back on this after adding a timezone to the data
+            filterTime.setMinutes(filterTime.getMinutes() - 15); // TODO: Check back on this after adding a timezone to the data
 
             // Update the definitionExpression on the trackLayer
             if (trackLayer) {
-                trackLayer.definitionExpression = `VEHICLE_TIME_ZONED >= '${filterTime.toISOString()}' AND VEHICLE_TIME_ZONED <= '${currentTime.toISOString()}'`;
+                trackLayer.definitionExpression = `VEHICLE_DATETIME >= '${filterTime.toISOString()}' AND VEHICLE_DATETIME <= '${currentTime.toISOString()}'`;
                 log("Updated definitionExpression:", trackLayer.definitionExpression);
             }
 
@@ -420,6 +420,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
         
         // Start a TimeSlider animation if not already playing
         if (autoplay && timeSlider.state === "ready") {
+          log("Time slider is set to: ", timeSlider.timeZone)
           timeSlider.play();
         } else {
           timeSlider.stop();
