@@ -19,8 +19,9 @@ const choreographyMapping = {
     trackField: "",
     trackLabelField: "",
     trackLabelIds: [],
+    trackRenderer: "basic",
     mapBookmark: "1 - Delayed",
-    mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Lines"],
+    mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Route 92"],
     mapLayersOff: ["WMATA | All Buses", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"],
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T00:00:00Z",
@@ -34,8 +35,9 @@ const choreographyMapping = {
     trackField: "",
     trackLabelField: "",
     trackLabelIds: [],
+    trackRenderer: "basic",
     mapBookmark: "2 - Delay frequency",
-    mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Lines", "OTP | Route 92 20250224 - 20250304"],
+    mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Route 92", "OTP | Route 92 20250224 - 20250304"],
     mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305"],
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T00:00:00Z",
@@ -44,14 +46,32 @@ const choreographyMapping = {
     timeSliderStep: 3,
     timeSliderAutoplay: false
   },
+  // TO-DO: Add optional renderer to the track layer
+  "#slide2_5": {
+    trackLayer: "WMATA | Route 92 Buses",
+    trackField: "TRIP_ID",
+    trackLabelField: "",
+    trackLabelIds: [],
+    trackRenderer: "otp",
+    mapBookmark: "Route 92",
+    mapLayersOn: ["WMATA | Route 92 Buses", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Route 92"],
+    mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305"],
+    mapTimeSyncedLayers: [],
+    timeSliderStart: "2025-03-04T18:00:00Z",
+    timeSliderEnd: "2025-03-05T23:00:00Z",
+    timeSliderUnit: "minutes",
+    timeSliderStep: 1,
+    timeSliderAutoplay: true
+  },
   "#slide3": {
     trackLayer: "WMATA | All Buses",
     trackField: "TRIP_ID",
     trackLabelField: "",
     trackLabelIds: [],
+    trackRenderer: "basic",
     mapBookmark: "3 - Washington DC",
     mapLayersOn: ["WMATA | All Buses"],
-    mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Lines", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"], 
+    mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"], 
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T10:00:00Z",
     timeSliderEnd: "2025-03-05T23:00:00Z",
@@ -64,9 +84,10 @@ const choreographyMapping = {
     trackField: "",
     trackLabelField: "",
     trackLabelIds: [],
+    trackRenderer: "basic",
     mapBookmark: "3 - Washington DC",
     mapLayersOn: ["OTP | Buses All Routes 20250305"],
-    mapLayersOff: ["WMATA | All Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Lines", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
+    mapLayersOff: ["WMATA | All Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T10:00:00Z",
     timeSliderEnd: "2025-03-05T23:00:00Z",
@@ -75,6 +96,159 @@ const choreographyMapping = {
     timeSliderAutoplay: false
   }
 }
+
+    // Create a definition expression to filter the track layer by time since timeslider
+    const dateDiffExpression = `
+    if(!HasValue($view, [ "timeProperties", "currentEnd" ])) {
+      return null;
+    }
+    var e = $view.timeProperties.currentEnd;
+    var t = $feature.VEHICLE_DATETIME;
+    var d = DateDiff(e, t, 'minutes');
+    return d;
+  `;
+
+// Basic track renderer
+const basicTrack = {
+  enabled: true,
+  timeField: "startTimeField",
+  maxDisplayObservationsPerTrack: 6,
+  latestObservations: {
+    visible: true,
+    renderer: {
+      type: "simple",
+      symbol: {
+        type: "simple-marker",
+        style: "circle",
+        color: "#E4F3FF",
+        size: 3,
+        outline: {
+          color: "black",
+          width: 0.5
+        }
+      },
+      visualVariables: [{
+          type: "opacity",
+          valueExpression: dateDiffExpression,
+          legendOptions: {
+            showLegend: false
+          },
+          stops: [
+            { value: 7, opacity: 1 },
+            { value: 14, opacity: 0 }
+          ]
+        }]
+    }
+  },
+  previousObservations: {
+    enabled: false,
+    visible: false,
+    labelsVisible: false,
+    renderer: {
+      type: "simple",
+      symbol: {
+        type: "simple-marker",
+        style: "circle",
+        color: "#56B2FF",
+        size: 1.5
+      }
+    }
+  },
+  trackLines: {
+    visible: true,
+    enabled: true,
+    renderer: {
+      type: "simple",
+      symbol: {
+        type: "simple-line",
+        color: "#1A78C6",
+        width: 0.5
+      },
+      visualVariables: [{
+          type: "opacity",
+          valueExpression: dateDiffExpression,
+          legendOptions: {
+            showLegend: false
+          },
+          stops: [
+            { value: 7, opacity: 1 },
+            { value: 14, opacity: 0 }
+          ]
+        }]
+    }
+  }
+};
+
+// OTP track renderer
+const otpTrack = {
+  enabled: true,
+  timeField: "startTimeField",
+  maxDisplayObservationsPerTrack: 6,
+  latestObservations: {
+    visible: true,
+    renderer: {
+      type: "simple",
+      symbol: {
+        type: "simple-marker",
+        style: "circle",
+        color: "#E4F3FF",
+        size: 3,
+        outline: {
+          color: "black",
+          width: 0.5
+        }
+      },
+      visualVariables: [{
+          type: "opacity",
+          valueExpression: dateDiffExpression,
+          legendOptions: {
+            showLegend: false
+          },
+          stops: [
+            { value: 7, opacity: 1 },
+            { value: 14, opacity: 0 }
+          ]
+        }]
+    }
+  },
+  previousObservations: {
+    enabled: false,
+    visible: false,
+    labelsVisible: false,
+    renderer: {
+      type: "simple",
+      symbol: {
+        type: "simple-marker",
+        style: "circle",
+        color: "#56B2FF",
+        size: 1.5
+      }
+    }
+  },
+  trackLines: {
+    visible: true,
+    enabled: true,
+    renderer: {
+      type: "simple",
+      symbol: {
+        type: "simple-line",
+        color: "#1A78C6",
+        width: 0.5
+      },
+      visualVariables: [{
+          type: "opacity",
+          valueExpression: dateDiffExpression,
+          legendOptions: {
+            showLegend: false
+          },
+          stops: [
+            { value: 7, opacity: 1 },
+            { value: 14, opacity: 0 }
+          ]
+        }]
+    }
+  }
+};
 
 // Wait for a change in readiness from the map element
 mapElement.addEventListener("arcgisViewReadyChange", (event) => {
@@ -88,9 +262,9 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
     const view = mapElement.view;
 
     // Disable map navigation
-    // view.on("mouse-wheel", (event) => {
-    //   event.stopPropagation();
-    // });
+    view.on("mouse-wheel", (event) => {
+      event.stopPropagation();
+    });
     // view.on("drag", (event) => {
     //   event.stopPropagation();
     // });
@@ -113,7 +287,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       let trackLayer = layers.find((layer) => layer.title === choreographyMapping[hash].trackLayer);
 
       // If found configure the track renderer
-      async function applyTrackRender(trackLayerName, trackLayerField, trackLabelField, trackLabelIds) {
+      async function applyTrackRender(trackLayerName, trackLayerField, trackLabelField, trackLabelIds, trackRenderer) {
         if (trackLayer) {
           // these are an attempt to do a hard reset on the renderer when we switch hashes
           map.remove(trackLayer);
@@ -124,18 +298,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           await trackLayer.when(); // Wait for the layer to load
           const trackStartField = trackLayer.timeInfo.startField;
 
-          const dateDiffExpression = `
-          if(!HasValue($view, [ "timeProperties", "currentEnd" ])) {
-            return null;
-          }
-          var e = $view.timeProperties.currentEnd;
-          var t = $feature.VEHICLE_DATETIME;
-          var d = DateDiff(e, t, 'minutes');
-          return d;
-        `;
-
-
-
+          // Configure the track layer renderer
           trackLayer.visible = true; // Make the layer visible
           trackLayer.timeInfo = {
             startField: trackStartField,
@@ -146,95 +309,14 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
             }
           };
           trackLayer.effect = "bloom(3, 0.5px, 10%)" // Apply a bloom effect to the track layer
-          trackLayer.trackInfo = {
-            enabled: true,
-            timeField: "startTimeField",
-            maxDisplayObservationsPerTrack: 6,
-            latestObservations: {
-              visible: true,
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-marker",
-                  style: "circle",
-                  color: "white",
-                  size: 3,
-                  outline: {
-                    color: "black",
-                    width: 0.5
-                  }
-                },
-                visualVariables: [{
-                    type: "opacity",
-                    valueExpression: dateDiffExpression,
-                    legendOptions: {
-                      showLegend: false
-                    },
-                    stops: [
-                      { value: 7, opacity: 1 },
-                      { value: 14, opacity: 0 }
-                    ]
-                  }]
-              }
-            },
-            previousObservations: {
-              enabled: false,
-              visible: false,
-              labelsVisible: false,
-            //   labelingInfo: [
-            //     {
-            //       symbol: {
-            //         type: "text",
-            //         color: "white",
-            //         haloColor: "black",
-            //         haloSize: 1.5,
-            //         font: {
-            //           family: "Noto Sans",
-            //           size: 8,
-            //           weight: "bold"
-            //         }
-            //       },
-            //       labelPlacement: "above-right",
-            //       labelExpressionInfo: {
-            //         expression: "Text($feature." + trackStartField + ", 'MMMM D, Y')"
-            //       },
-            //       where: whereClause
-            //     }
-            //   ],
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-marker",
-                  style: "circle",
-                  color: "white",
-                  size: 1.5
-                }
-              }
-            },
-            trackLines: {
-              visible: true,
-              enabled: true,
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-line",
-                  color: "#E64C01",
-                  width: 0.5
-                },
-                visualVariables: [{
-                    type: "opacity",
-                    valueExpression: dateDiffExpression,
-                    legendOptions: {
-                      showLegend: false
-                    },
-                    stops: [
-                      { value: 7, opacity: 1 },
-                      { value: 14, opacity: 0 }
-                    ]
-                  }]
-              }
-            }
-          };
+          // Set the renderer based on the trackRenderer argument basic | otp
+          if (trackRenderer === "otp") {
+            trackLayer.trackInfo = otpTrack;
+          } else if (trackRenderer === "basic") {
+            trackLayer.trackInfo = basicTrack;
+          } else {
+            trackLayer.trackInfo = basicTrack;
+          }
         }
       }
 
@@ -349,7 +431,8 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           choreographyMapping[hash].trackLayer,
           choreographyMapping[hash].trackField,
           choreographyMapping[hash].trackLabelField,
-          choreographyMapping[hash].trackLabelIds
+          choreographyMapping[hash].trackLabelIds,
+          choreographyMapping[hash].trackRenderer
         ); // Wait for the track renderer to be applied
 
         updateMapBookmark(choreographyMapping[hash].mapBookmark);
