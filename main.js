@@ -22,7 +22,7 @@ const choreographyMapping = {
     trackRenderer: "basic",
     mapBookmark: "1 - Delayed",
     mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "WMATA | Metro Bus Route 92"],
-    mapLayersOff: ["WMATA | All Buses", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"],
+    mapLayersOff: ["WMATA | Route 92 Buses", "WMATA | All Buses", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"],
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T09:30:00-05:00",
     timeSliderEnd: "2025-03-05T11:00:00-05:00",
@@ -33,15 +33,15 @@ const choreographyMapping = {
   "#slide2": {
     trackLayer: "WMATA | Route 92 Buses",
     trackField: "TRIP_ID",
-    trackLabelField: "",
-    trackLabelIds: [],
+    trackLabelField: "VEHICLE_LABEL",
+    trackLabelIds: ["6536"],
     trackRenderer: "otp",
     mapBookmark: "Route 92",
     mapLayersOn: ["WMATA | Route 92 Buses", "WMATA | Metro Bus Route 92"],
-    mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"],
+    mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | All Buses", "OTP | Buses All Routes 20250305", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"],
     mapTimeSyncedLayers: [],
-    timeSliderStart: "2025-03-05T07:00:00-05:00",
-    timeSliderEnd: "2025-03-05T17:00:00-05:00",
+    timeSliderStart: "2025-03-05T09:00:00-05:00",
+    timeSliderEnd: "2025-03-05T11:00:00-05:00",
     timeSliderUnit: "minutes",
     timeSliderStep: 1,
     timeSliderAutoplay: true
@@ -62,7 +62,6 @@ const choreographyMapping = {
     timeSliderStep: 3,
     timeSliderAutoplay: false
   },
-  // TO-DO: Add optional renderer to the track layer
   "#slide4": {
     trackLayer: "WMATA | All Buses",
     trackField: "TRIP_ID",
@@ -108,7 +107,7 @@ const choreographyMapping = {
     return d;
   `;
 
-// Basic track renderer
+  // Basic track renderer
 const basicTrack = {
   enabled: true,
   timeField: "startTimeField",
@@ -186,18 +185,84 @@ const otpTrack = {
   maxDisplayObservationsPerTrack: 6,
   latestObservations: {
     visible: true,
+    labelsVisible: true,
+    labelingInfo: [
+                {
+                  symbol: {
+                    type: "text",
+                    color: "white",
+                    haloColor: "black",
+                    haloSize: 1.5,
+                    font: {
+                      family: "Noto Sans",
+                      size: 8,
+                      weight: "bold"
+                    }
+                  },
+                  labelPlacement: "above-right",
+                  labelExpressionInfo: {
+                    expression: "$feature.VEHICLE_LABEL"
+                  },
+                  where: `VEHICLE_ID = 6536 AND TRIP_ID = 29472020`
+                }
+              ],
     renderer: {
-      type: "simple",
-      symbol: {
+      type: "unique-value",
+      field: "NEW_OTP_TEXT",
+      defaultSymbol: {
         type: "simple-marker",
         style: "circle",
         color: "#E4F3FF",
         size: 3,
         outline: {
           color: "black",
-          width: 0.5
+          width: 0.25
         }
       },
+      uniqueValueInfos: [
+        {
+          value: "Early",
+          label: "Early",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: "#2eb245",
+            size: 5,
+            outline: {
+              color: "black",
+              width: 0.25
+            }
+          }
+        },
+        {
+          value: "On-Time",
+          label: "On-Time",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: "#1a78c6",
+            size: 5,
+            outline: {
+              color: "black",
+              width: 0.25
+            }
+          }
+        },
+        {
+          value: "Late",
+          label: "Late",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: "#fccb16",
+            size: 5,
+            outline: {
+              color: "black",
+              width: 0.25
+            }
+          }
+        }
+      ],
       visualVariables: [{
           type: "opacity",
           valueExpression: dateDiffExpression,
@@ -212,29 +277,119 @@ const otpTrack = {
     }
   },
   previousObservations: {
-    enabled: false,
-    visible: false,
+    enabled: true,
+    visible: true,
     labelsVisible: false,
     renderer: {
-      type: "simple",
-      symbol: {
+      type: "unique-value",
+      field: "NEW_OTP_TEXT",
+      defaultSymbol: {
         type: "simple-marker",
         style: "circle",
-        color: "#56B2FF",
-        size: 1.5
-      }
+        color: "#E4F3FF",
+        size: 2,
+        outline: {
+          color: "white",
+          width: 0
+        }
+      },
+      uniqueValueInfos: [
+        {
+          value: "Early",
+          label: "Early",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: "#2eb245",
+            size: 2,
+            outline: {
+              color: "white",
+              width: 0
+            }
+          }
+        },
+        {
+          value: "On-Time",
+          label: "On-Time",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: "#1a78c6",
+            size: 2,
+            outline: {
+              color: "white",
+              width: 0
+            }
+          }
+        },
+        {
+          value: "Late",
+          label: "Late",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: "#fccb16",
+            size: 2,
+            outline: {
+              color: "white",
+              width: 0
+            }
+          }
+        }
+      ],
+      visualVariables: [{
+          type: "opacity",
+          valueExpression: dateDiffExpression,
+          legendOptions: {
+            showLegend: false
+          },
+          stops: [
+            { value: 7, opacity: 1 },
+            { value: 14, opacity: 0 }
+          ]
+        }]
     }
   },
   trackLines: {
     visible: true,
     enabled: true,
     renderer: {
-      type: "simple",
-      symbol: {
+      type: "unique-value",
+      field: "NEW_OTP_TEXT",
+      defaultSymbol: {
         type: "simple-line",
         color: "#1A78C6",
         width: 0.5
       },
+      uniqueValueInfos: [
+        {
+          value: "Early",
+          label: "Early",
+          symbol: {
+            type: "simple-line",
+            color: "#2eb245",
+            width: 0.5
+          }
+        },
+        {
+          value: "On-Time",
+          label: "On-Time",
+          symbol: {
+            type: "simple-line",
+            color: "#1a78c6",
+            width: 0.5
+          }
+        },
+        {
+          value: "Late",
+          label: "Late",
+          symbol: {
+            type: "simple-line",
+            color: "#fccb16",
+            width: 0.5
+          }
+        }
+      ],
       visualVariables: [{
           type: "opacity",
           valueExpression: dateDiffExpression,
@@ -319,7 +474,6 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           }
         }
       }
-
       // Function to update the map bookmark
       function updateMapBookmark(bookmarkName) {
         if (choreographyMapping[hash]) {
