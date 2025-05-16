@@ -12,6 +12,11 @@ const mapElement = document.querySelector("arcgis-map");
 const timeSlider = document.querySelector("arcgis-time-slider");
 const resetButton = document.querySelector("#reset-button");
 
+const symbolSize = 5;
+const late = "#fccb16";
+const early = "#29DC48" // "#39CC53";
+const onTime = "#46B1F6";
+
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
   "#slide1": {
@@ -160,7 +165,7 @@ const basicTrack = {
       type: "simple",
       symbol: {
         type: "simple-line",
-        color: "#1A78C6",
+        color: onTime,
         width: 0.5
       },
       visualVariables: [{
@@ -190,11 +195,11 @@ const otpTrack = {
                 {
                   symbol: {
                     type: "text",
-                    color: "white",
+                    color: "#FFFF2E",
                     haloColor: "black",
                     haloSize: 1.5,
                     font: {
-                      family: "Noto Sans",
+                      family: "Ubuntu Mono",
                       size: 8,
                       weight: "bold"
                     }
@@ -226,8 +231,8 @@ const otpTrack = {
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: "#2eb245",
-            size: 5,
+            color: early,
+            size: symbolSize,
             outline: {
               color: "black",
               width: 0.25
@@ -240,8 +245,8 @@ const otpTrack = {
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: "#1a78c6",
-            size: 5,
+            color: onTime,
+            size: symbolSize,
             outline: {
               color: "black",
               width: 0.25
@@ -254,8 +259,8 @@ const otpTrack = {
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: "#fccb16",
-            size: 5,
+            color: late,
+            size: symbolSize,
             outline: {
               color: "black",
               width: 0.25
@@ -300,7 +305,7 @@ const otpTrack = {
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: "#2eb245",
+            color: early,
             size: 2,
             outline: {
               color: "white",
@@ -314,7 +319,7 @@ const otpTrack = {
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: "#1a78c6",
+            color: onTime,
             size: 2,
             outline: {
               color: "white",
@@ -328,7 +333,7 @@ const otpTrack = {
           symbol: {
             type: "simple-marker",
             style: "circle",
-            color: "#fccb16",
+            color: late,
             size: 2,
             outline: {
               color: "white",
@@ -358,7 +363,7 @@ const otpTrack = {
       field: "NEW_OTP_TEXT",
       defaultSymbol: {
         type: "simple-line",
-        color: "#1A78C6",
+        color: onTime,
         width: 0.5
       },
       uniqueValueInfos: [
@@ -367,7 +372,7 @@ const otpTrack = {
           label: "Early",
           symbol: {
             type: "simple-line",
-            color: "#2eb245",
+            color: early,
             width: 0.5
           }
         },
@@ -376,7 +381,7 @@ const otpTrack = {
           label: "On-Time",
           symbol: {
             type: "simple-line",
-            color: "#1a78c6",
+            color: onTime,
             width: 0.5
           }
         },
@@ -385,7 +390,7 @@ const otpTrack = {
           label: "Late",
           symbol: {
             type: "simple-line",
-            color: "#fccb16",
+            color: late,
             width: 0.5
           }
         }
