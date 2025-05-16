@@ -14,7 +14,7 @@ const resetButton = document.querySelector("#reset-button");
 
 const symbolSize = 5;
 const late = "#fccb16";
-const early = "#29DC48" // "#39CC53";
+const early = "#29DC48";
 const onTime = "#46B1F6";
 
 // Define a the mapping between slides and time ranges
@@ -77,10 +77,10 @@ const choreographyMapping = {
     mapLayersOn: ["WMATA | All Buses"],
     mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"], 
     mapTimeSyncedLayers: [],
-    timeSliderStart: "2025-03-05T8:00:00-05:00",
-    timeSliderEnd: "2025-03-05T23:00:00-05:00",
+    timeSliderStart: "2025-03-05T13:00:00Z",
+    timeSliderEnd: "2025-03-05T23:00:00Z",
     timeSliderUnit: "minutes",
-    timeSliderStep: 1,
+    timeSliderStep: 2,
     timeSliderAutoplay: true
   },
   "#slide5": {
@@ -116,7 +116,7 @@ const choreographyMapping = {
 const basicTrack = {
   enabled: true,
   timeField: "startTimeField",
-  maxDisplayObservationsPerTrack: 6,
+  maxDisplayObservationsPerTrack: 4,
   latestObservations: {
     visible: true,
     renderer: {
@@ -124,7 +124,7 @@ const basicTrack = {
       symbol: {
         type: "simple-marker",
         style: "circle",
-        color: "#E4F3FF",
+        color: onTime,
         size: 3,
         outline: {
           color: "black",
@@ -153,7 +153,7 @@ const basicTrack = {
       symbol: {
         type: "simple-marker",
         style: "circle",
-        color: "#56B2FF",
+        color: onTime,
         size: 1.5
       }
     }
@@ -187,7 +187,7 @@ const basicTrack = {
 const otpTrack = {
   enabled: true,
   timeField: "startTimeField",
-  maxDisplayObservationsPerTrack: 6,
+  maxDisplayObservationsPerTrack: 5,
   latestObservations: {
     visible: true,
     labelsVisible: true,
@@ -200,7 +200,7 @@ const otpTrack = {
                     haloSize: 1.5,
                     font: {
                       family: "Ubuntu Mono",
-                      size: 8,
+                      size: 10,
                       weight: "bold"
                     }
                   },
@@ -211,6 +211,211 @@ const otpTrack = {
                   where: `VEHICLE_ID = 6536 AND TRIP_ID = 29472020`
                 }
               ],
+    renderer: {
+      type: "unique-value",
+      field: "NEW_OTP_TEXT",
+      defaultSymbol: {
+        type: "simple-marker",
+        style: "circle",
+        color: "#E4F3FF",
+        size: 3,
+        outline: {
+          color: "black",
+          width: 0.25
+        }
+      },
+      uniqueValueInfos: [
+        {
+          value: "Early",
+          label: "Early",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: early,
+            size: symbolSize,
+            outline: {
+              color: "black",
+              width: 0.25
+            }
+          }
+        },
+        {
+          value: "On-Time",
+          label: "On-Time",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: onTime,
+            size: symbolSize,
+            outline: {
+              color: "black",
+              width: 0.25
+            }
+          }
+        },
+        {
+          value: "Late",
+          label: "Late",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: late,
+            size: symbolSize,
+            outline: {
+              color: "black",
+              width: 0.25
+            }
+          }
+        }
+      ],
+      visualVariables: [{
+          type: "opacity",
+          valueExpression: dateDiffExpression,
+          legendOptions: {
+            showLegend: false
+          },
+          stops: [
+            { value: 7, opacity: 1 },
+            { value: 14, opacity: 0 }
+          ]
+        }]
+    }
+  },
+  previousObservations: {
+    enabled: true,
+    visible: true,
+    labelsVisible: false,
+    renderer: {
+      type: "unique-value",
+      field: "NEW_OTP_TEXT",
+      defaultSymbol: {
+        type: "simple-marker",
+        style: "circle",
+        color: "#E4F3FF",
+        size: 2,
+        outline: {
+          color: "white",
+          width: 0
+        }
+      },
+      uniqueValueInfos: [
+        {
+          value: "Early",
+          label: "Early",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: early,
+            size: 2,
+            outline: {
+              color: "white",
+              width: 0
+            }
+          }
+        },
+        {
+          value: "On-Time",
+          label: "On-Time",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: onTime,
+            size: 2,
+            outline: {
+              color: "white",
+              width: 0
+            }
+          }
+        },
+        {
+          value: "Late",
+          label: "Late",
+          symbol: {
+            type: "simple-marker",
+            style: "circle",
+            color: late,
+            size: 2,
+            outline: {
+              color: "white",
+              width: 0
+            }
+          }
+        }
+      ],
+      visualVariables: [{
+          type: "opacity",
+          valueExpression: dateDiffExpression,
+          legendOptions: {
+            showLegend: false
+          },
+          stops: [
+            { value: 7, opacity: 1 },
+            { value: 14, opacity: 0 }
+          ]
+        }]
+    }
+  },
+  trackLines: {
+    visible: true,
+    enabled: true,
+    renderer: {
+      type: "unique-value",
+      field: "NEW_OTP_TEXT",
+      defaultSymbol: {
+        type: "simple-line",
+        color: onTime,
+        width: 0.5
+      },
+      uniqueValueInfos: [
+        {
+          value: "Early",
+          label: "Early",
+          symbol: {
+            type: "simple-line",
+            color: early,
+            width: 0.5
+          }
+        },
+        {
+          value: "On-Time",
+          label: "On-Time",
+          symbol: {
+            type: "simple-line",
+            color: onTime,
+            width: 0.5
+          }
+        },
+        {
+          value: "Late",
+          label: "Late",
+          symbol: {
+            type: "simple-line",
+            color: late,
+            width: 0.5
+          }
+        }
+      ],
+      visualVariables: [{
+          type: "opacity",
+          valueExpression: dateDiffExpression,
+          legendOptions: {
+            showLegend: false
+          },
+          stops: [
+            { value: 7, opacity: 1 },
+            { value: 14, opacity: 0 }
+          ]
+        }]
+    }
+  }
+};
+
+const otpTrack_small = {
+  enabled: true,
+  timeField: "startTimeField",
+  maxDisplayObservationsPerTrack: 5,
+  latestObservations: {
+    visible: true,
     renderer: {
       type: "unique-value",
       field: "NEW_OTP_TEXT",
