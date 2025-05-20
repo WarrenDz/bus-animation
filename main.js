@@ -45,7 +45,7 @@ const choreographyMapping = {
     mapLayersOn: ["WMATA | Route 92 Buses", "WMATA | Metro Bus Route 92"],
     mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | All Buses", "OTP | Buses All Routes 20250305", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"],
     mapTimeSyncedLayers: [],
-    timeSliderStart: "2025-03-05T09:00:00-05:00",
+    timeSliderStart: "2025-03-05T09:00:30-05:00",
     timeSliderEnd: "2025-03-05T11:00:00-05:00",
     timeSliderUnit: "minutes",
     timeSliderStep: 1,
@@ -59,7 +59,7 @@ const choreographyMapping = {
     trackRenderer: "basic",
     mapBookmark: "Route 92",
     mapLayersOn: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"],
-    mapLayersOff: ["WMATA | All Buses", "OTP | Buses All Routes 20250305", "WMATA | Metro Bus Route 92"],
+    mapLayersOff: ["WMATA | Route 92 Buses", "WMATA | All Buses", "OTP | Buses All Routes 20250305", "WMATA | Metro Bus Route 92"],
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T08:00:00-05:00",
     timeSliderEnd: "2025-03-05T23:00:00-05:00",
@@ -75,7 +75,7 @@ const choreographyMapping = {
     trackRenderer: "basic",
     mapBookmark: "3 - Washington DC",
     mapLayersOn: ["WMATA | All Buses"],
-    mapLayersOff: ["WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"], 
+    mapLayersOff: ["WMATA | Route 92 Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304", "OTP | Buses All Routes 20250305"], 
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T13:00:00Z",
     timeSliderEnd: "2025-03-05T23:00:00Z",
@@ -91,7 +91,7 @@ const choreographyMapping = {
     trackRenderer: "basic",
     mapBookmark: "3 - Washington DC",
     mapLayersOn: ["OTP | Buses All Routes 20250305"],
-    mapLayersOff: ["WMATA | All Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
+    mapLayersOff: ["WMATA | Route 92 Buses", "WMATA | All Buses", "WMATA | Route 92 Bus Delayed", "WMATA | Metro Bus Route 92", "WMATA | Metro Bus Stops", "OTP | Route 92 20250224 - 20250304"], 
     mapTimeSyncedLayers: [],
     timeSliderStart: "2025-03-05T8:00:00-05:00",
     timeSliderEnd: "2025-03-05T23:00:00-05:00",
@@ -124,7 +124,7 @@ const basicTrack = {
       symbol: {
         type: "simple-marker",
         style: "circle",
-        color: onTime,
+        color: "white",
         size: 3,
         outline: {
           color: "black",
@@ -695,7 +695,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           if (targetBookmark) {
             const bookmarkTarget = targetBookmark.viewpoint;
             bookmarkTarget.scale = bookmarkTarget.scale * 1.1; // Adjust the scale to zoom out a bit
-            mapElement.goTo(bookmarkTarget, { duration: 6000 });  // Navigates to the bookmark view
+            mapElement.goTo(bookmarkTarget, { duration: 4500 });  // Navigates to the bookmark view
           } else {
             console.error(`Bookmark "${bookmarkName}" not found!`);
           } 
