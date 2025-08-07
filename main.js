@@ -13,9 +13,9 @@ const timeSlider = document.querySelector("arcgis-time-slider");
 const resetButton = document.querySelector("#reset-button");
 
 const symbolSize = 5;
-const late = "#fccb16";
-const early = "#29DC48";
-const onTime = "#46B1F6";
+const late = "#c7811e";
+const early = "#8c270e";
+const onTime = "#205f42ff";
 
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
