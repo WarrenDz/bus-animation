@@ -13,9 +13,9 @@ const timeSlider = document.querySelector("arcgis-time-slider");
 const resetButton = document.querySelector("#reset-button");
 
 const symbolSize = 5;
-const late = "#fccb16";
-const early = "#29DC48";
-const onTime = "#46B1F6";
+const late = "#c7811e";
+const early = "#8c270e";
+const onTime = "#205f42ff";
 
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
@@ -634,6 +634,29 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
     //   event.stopPropagation();
     // });
 
+  function adjustMapPadding(view) {
+    // Define your desktop breakpoint (e.g., 1024px)
+    const desktopBreakpoint = 1024;
+    if (window.innerWidth >= desktopBreakpoint) {
+      // Example: reserve 350px on the right for UI
+      view.padding = {
+        left: 500,
+        right: 0,
+        top: 0,
+        bottom: 0
+      };
+    } else {
+      // No padding for mobile/tablet
+      view.padding = {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+      };
+    }
+  }
+
+
     // Access the WebMap instance from the view
     const map = view.map;
 
@@ -693,8 +716,9 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           // Find the bookmark by name
           // If the bookmark exists, navigate to it
           if (targetBookmark) {
+            adjustMapPadding(view); // Ensure padding is set before navigating
             const bookmarkTarget = targetBookmark.viewpoint;
-            bookmarkTarget.scale = bookmarkTarget.scale * 1.1; // Adjust the scale to zoom out a bit
+            // bookmarkTarget.scale = bookmarkTarget.scale * 1.1; // Adjust the scale to zoom out a bit
             mapElement.goTo(bookmarkTarget, { duration: 4500 });  // Navigates to the bookmark view
           } else {
             console.error(`Bookmark "${bookmarkName}" not found!`);
